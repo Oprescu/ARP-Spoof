@@ -37,7 +37,6 @@ def Main():
                 description = data[1]
                 nrOfSeekers = data[2]
                 jobInput = data[3]
-                print(jobType)
                 if jobType == "revStr":
                     jobInput = jobInput[::-1]
                     mySocket.send(jobInput.encode())

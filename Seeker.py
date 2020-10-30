@@ -1,5 +1,5 @@
 import socket
-
+import random
 
 def Main():
     # add creator host IP's here
@@ -37,6 +37,7 @@ def Main():
                 description = data[1]
                 nrOfSeekers = data[2]
                 jobInput = data[3]
+                print(jobType)
                 if jobType == "revStr":
                     jobInput = jobInput[::-1]
                     mySocket.send(jobInput.encode())
@@ -62,6 +63,10 @@ def Main():
                     c = a * b
                     mySocket.send(str(c).encode())
                     print("Job Complete")
+                elif jobType == "RPS":
+                    mySocket.send(str(random.randint(1, 3)).encode())
+                    print("Job Complete")
+
 
             else:
                 mySocket.send("refuse".encode())

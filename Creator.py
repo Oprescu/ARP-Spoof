@@ -43,10 +43,11 @@ def Main():
 def haveJob(jobType, description, nrOfSeekers, jobInput):
     host = "127.0.0.1"
     port = int(sys.argv[1])
-    mySocket = socket.socket()
-    mySocket.bind((host, port))
+    
 
     while True:
+        mySocket = socket.socket()
+        mySocket.bind((host, port))
         print("Looking for seeker...")
         mySocket.listen(0)
         conn, addr = mySocket.accept()
@@ -56,14 +57,20 @@ def haveJob(jobType, description, nrOfSeekers, jobInput):
         conn.send(message.encode())
         data = conn.recv(1024).decode()
         if not data:
+            conn.close()
+            mySocket.close()
             break
         if data == "refuse":
             print("Job refused by seeker")
+            conn.close()
+            mySocket.close()
         else:
             print("Data returned from seeker: " + str(data))
+            conn.close()
+            mySocket.close()
             break
 
-    conn.close()
+    
 
 
 if __name__ == '__main__':

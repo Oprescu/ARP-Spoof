@@ -15,6 +15,7 @@ def Main():
             try:
                 print("Asking " + host[i] + ":" + str(port[i]) + " for a job...")
                 mySocket = socket.socket()
+                mySocket.settimeout(1)
                 mySocket.connect((host[i], port[i]))
                 break
             except:

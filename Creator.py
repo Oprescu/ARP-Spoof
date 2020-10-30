@@ -122,7 +122,7 @@ def multiJob(jobType, description, nrOfSeekers, jobInput):
 def haveJob(jobType, description, nrOfSeekers, jobInput):
     host = "127.0.0.1"
     port = int(sys.argv[1])
-
+    
     while True:
         mySocket = socket.socket()
         mySocket.bind((host, port))

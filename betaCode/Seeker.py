@@ -1,5 +1,24 @@
 import socket
-import random
+import os
+
+
+def jobHandler(jobType, jobDesc, jobData, socket):
+    if jobType == "check_If_Online":
+
+        if os.system(f"ping {jobData}") == 0:
+            print("\nThe destination is online")
+            socket.send("ONLINE".encode())
+        else:
+            print("\nThe destination is unreachable.")
+            socket.send("OFFLINE".encode())
+    elif jobType == "detect_Port_Status":
+        ipAndPort=jobData.split("*")
+        ans, unans = sr(IP(dst=ipAndPort[0], proto=(0,255))/"SCAPY", retry=2)
+        ans.summary(lambda s,r: r.sprintf("%IP.src% is alive"))
+
+        #pac = sr(IP(dst=ipAndPort[0])/TCP(flags="S", dport=ipAndPort[1]))
+        #send(pac)
+
 
 def Main():
     # add creator host IP's here
@@ -32,10 +51,18 @@ def Main():
             data = str(data)
             #print("Job found from creater : " + data)
             print("message recieved from creator" + data)
-            #status = input("Accept job? Y/N: ").upper()
-            status=input("send back a message: ")
-            mySocket.send(status.encode())
+            status = input("Accept job? Y/N: ").upper()
 
+            mySocket.send(status.encode())
+            if (status == "Y"):
+                mySocket.settimeout(30)
+                try:
+                    jobRECEIVE = mySocket.recv(1024).decode()
+                    jobSPLIT = jobRECEIVE.split("$")
+
+                    jobHandler(jobSPLIT[0], jobSPLIT[1], jobSPLIT[2], mySocket)
+                except:
+                    print("Uh oh. The creator was too slow!")
            # data=mySocket.recv(1024).decode()
             #print(f"message is {data}")
             """

@@ -1,6 +1,6 @@
 import socket
 import os
-
+from scapy.all import *
 
 def jobHandler(jobType, jobDesc, jobData, socket):
     if jobType == "check_If_Online":
@@ -13,10 +13,16 @@ def jobHandler(jobType, jobDesc, jobData, socket):
             socket.send("OFFLINE".encode())
     elif jobType == "detect_Port_Status":
         ipAndPort=jobData.split("*")
-        ans, unans = sr(IP(dst=ipAndPort[0], proto=(0,255))/"SCAPY", retry=2)
-        ans.summary(lambda s,r: r.sprintf("%IP.src% is alive"))
 
-        #pac = sr(IP(dst=ipAndPort[0])/TCP(flags="S", dport=ipAndPort[1]))
+        pac = sr1(IP(dst=ipAndPort[0])/TCP(dport=int(ipAndPort[1])), timeout=1)
+        try:
+            pac.show()
+            print("The port is open")
+            socket.send("PORT OPEN".encode())
+        except:
+            print("The port is closed")
+            socket.send("PORT CLOSED".encode())
+
         #send(pac)
 
 
@@ -56,13 +62,13 @@ def Main():
             mySocket.send(status.encode())
             if (status == "Y"):
                 mySocket.settimeout(30)
-                try:
-                    jobRECEIVE = mySocket.recv(1024).decode()
-                    jobSPLIT = jobRECEIVE.split("$")
+                #try:
+                jobRECEIVE = mySocket.recv(1024).decode()
+                jobSPLIT = jobRECEIVE.split("$")
 
-                    jobHandler(jobSPLIT[0], jobSPLIT[1], jobSPLIT[2], mySocket)
-                except:
-                    print("Uh oh. The creator was too slow!")
+                jobHandler(jobSPLIT[0], jobSPLIT[1], jobSPLIT[2], mySocket)
+                #except:
+                 #   print("Uh oh. The creator was too slow!")
            # data=mySocket.recv(1024).decode()
             #print(f"message is {data}")
             """

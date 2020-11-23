@@ -11,10 +11,10 @@ def detectPortStatus(csock, address):
     try:
         csock.send(f"detect_Port_Status$Job creator wants${destIP}*{destPort}".encode())
         data = csock.recv(1024).decode()
-        if data == "ONLINE":
-            print("Job completed. The Destination was Online")
+        if data == "PORT OPEN":
+            print(f"Job completed. Port {destPort} of IP {destIP} is open.")
         else:
-            print("Job completed. The Destination was Offline")
+            print(f"Job completed. Port {destPort} of IP {destIP} is closed.")
 
     except:
         print("ran out of time.")
@@ -26,9 +26,9 @@ def checkIfOnline(csock, address):
         csock.send(f"check_If_Online$ Job creator wants you to see if this IP is online$ {destination}".encode())
         data = csock.recv(1024).decode()
         if data == "ONLINE":
-            print("Job completed. The Destination was Online")
+            print(f"Job completed. {destination} is Online")
         else:
-            print("Job completed. The Destination was Offline")
+            print(f"Job completed. {destination} is Offline")
 
     except:
         print("ran out of time.")
@@ -36,8 +36,8 @@ def checkIfOnline(csock, address):
 
 def newClient(csock, address):
     jobList = ["check_If_Online", "detect_Port_Status"]
-    #rand = random.randint(0,3)
-    rand = 1
+    rand = random.randint(0,1)
+    #rand = 1
     numOfNodes = ""
     if rand <= 1:
         numOfNodes = "1 person"

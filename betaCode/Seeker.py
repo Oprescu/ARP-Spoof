@@ -4,7 +4,6 @@ from scapy.all import *
 
 def jobHandler(jobType, jobDesc, jobData, socket):
     if jobType == "check_If_Online":
-        print(jobData)
         icmp = IP(dst=jobData)/ICMP()
         resp = sr1(icmp,timeout=10)
         if resp != None:

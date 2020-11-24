@@ -23,7 +23,7 @@ def detectPortStatus(csock, address):
 def checkIfOnline(csock, address):
     destination = input("Enter an IP destination or Host Name to see if it's online: \n")
     try:
-        csock.send(f"check_If_Online$ Job creator wants you to see if this IP is online$ {destination}".encode())
+        csock.send(f"check_If_Online$ Job creator wants you to see if this IP is online${destination}".encode())
         data = csock.recv(1024).decode()
         if data == "ONLINE":
             print(f"Job completed. {destination} is Online")

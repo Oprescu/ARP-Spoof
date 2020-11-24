@@ -4,8 +4,10 @@ from scapy.all import *
 
 def jobHandler(jobType, jobDesc, jobData, socket):
     if jobType == "check_If_Online":
-
-        if os.system(f"ping {jobData}") == 0:
+        print(jobData)
+        icmp = IP(dst=jobData)/ICMP()
+        resp = sr1(icmp,timeout=10)
+        if resp != None:
             print("\nThe destination is online")
             socket.send("ONLINE".encode())
         else:

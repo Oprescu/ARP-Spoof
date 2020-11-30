@@ -5,6 +5,12 @@ import threading
 import time
 from scapy.all import *
 
+#TEST CASES
+#Detect Port Status - Success: IP 8.8.8.8, port 53 (google server, port 53 is DNS recognition) Failure: IP 8.8.8.8, port 52034 (very high value, non-essential port)
+#Check If Online - Success: 8.8.8.8 Failure: 43.242.188.0 (a Chinese IP)
+#ICMP Attack - IP 8.8.8.8
+#TCP Attack - IP 8.8.8.8
+
 clients_connected: int = 0
 currentThread: int = 0
 threadInit: int = 0

